@@ -1,0 +1,52 @@
+/*
+*******************************************************************************************
+* @Name      : TrackShipmentStatusControllerTest
+* @Author    : Sai
+* Test Class : 
+*******************************************************************************************
+* MODIFICATION LOG
+* Version       Developer         Date                Description
+*-------------------------------------------------------------------------------------------
+*   1.0         Sai            04/18/2024          Purpose : Test Class for TrackShipmentStatusController
+*******************************************************************************************
+*/
+@isTest
+class TrackShipmentStatusControllerTest {
+    @IsTest
+    static void trackShipmentTest() {
+        // Arrange: Create test data required for the test
+        // Since this is a callout test, no data setup is required here
+
+        // Mocking the HTTP Callout response
+        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
+
+        // Act: Execute the method to test
+        Test.startTest();
+
+        Map<String,Object> inputMap = new Map<String,Object>{
+            'trackingNumber' => '1234567890'
+        };
+
+        // Call the method that makes the callout
+        Map<String,Object> result = TrackShipmentStatusController.getTrackingStatus(inputMap);
+
+        Test.stopTest();
+
+        // Assert: Verify the result is as expected
+        System.assertEquals(false, result.get('isCalloutFailed'), 'The callout should not fail.');
+        System.assertNotEquals(null, result.get('status'), 'Status should not be null');
+    }
+    
+    // Inner class to generate a mock HTTP response
+    private class MockHttpResponseGenerator implements HttpCalloutMock {
+        // Implement this interface method
+        public HttpResponse respond(HttpRequest request) {
+            // Create a fake response
+            HttpResponse response = new HttpResponse();
+            response.setStatusCode(200);
+            response.setBody('Delivered');
+            response.setHeader('Content-Type', 'application/json');
+            return response;
+        }
+    }
+}

@@ -2,6 +2,8 @@ Named Credential -
     Track_Shipment
 Apex Class -
     TrackShipmentStatusController
+Apex Test Class -
+    TrackShipmentStatusControllerTest
 LWC -
     trackShipmentStatus
 

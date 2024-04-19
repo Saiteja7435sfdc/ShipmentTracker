@@ -12,41 +12,52 @@
 */
 @isTest
 class TrackShipmentStatusControllerTest {
-    @IsTest
-    static void trackShipmentTest() {
-        // Arrange: Create test data required for the test
-        // Since this is a callout test, no data setup is required here
-
+    @isTest static void testTrackShipmentSuccess() {
         // Mocking the HTTP Callout response
-        Test.setMock(HttpCalloutMock.class, new MockHttpResponseGenerator());
-
-        // Act: Execute the method to test
+        Test.setMock(HttpCalloutMock.class, new TrackShipmentMockHttpResponseGenerator(true));
+        
+        User currentUser = [SELECT Id, Name, ProfileId FROM User WHERE Id = :UserInfo.getUserId()];
+        
         Test.startTest();
-
-        Map<String,Object> inputMap = new Map<String,Object>{
-            'trackingNumber' => '1234567890'
-        };
-
-        // Call the method that makes the callout
-        Map<String,Object> result = TrackShipmentStatusController.getTrackingStatus(inputMap);
-
+        System.runAs(currentUser){
+            Map<String,Object> mapResult = TrackShipmentStatusController.getTrackingStatus(
+                new Map<String,Object>{'trackingNumber' => '1234'}
+            );
+            Assert.areEqual(false, mapResult.get('isCalloutFailed'));
+            Assert.areEqual('Shipped- On Time', mapResult.get('status'));
+        }
         Test.stopTest();
-
-        // Assert: Verify the result is as expected
-        System.assertEquals(false, result.get('isCalloutFailed'), 'The callout should not fail.');
-        System.assertNotEquals(null, result.get('status'), 'Status should not be null');
     }
     
-    // Inner class to generate a mock HTTP response
-    private class MockHttpResponseGenerator implements HttpCalloutMock {
-        // Implement this interface method
+    @isTest static void testTrackShipmentFailed() {
+        // Mocking the HTTP Callout response
+        Test.setMock(HttpCalloutMock.class, new TrackShipmentMockHttpResponseGenerator(false));
+        
+        User currentUser = [SELECT Id, Name, ProfileId FROM User WHERE Id = :UserInfo.getUserId()];
+        
+        Test.startTest();
+        System.runAs(currentUser){
+            Map<String,Object> mapResult = TrackShipmentStatusController.getTrackingStatus(
+                new Map<String,Object>{'trackingNumber' => '1234'}
+            );
+            Assert.areEqual(true, mapResult.get('isCalloutFailed'));
+            Assert.areEqual(null, mapResult.get('status'));
+        }
+        Test.stopTest();
+    }
+    
+    class TrackShipmentMockHttpResponseGenerator implements HttpCalloutMock {
+        Integer statusCode;
+        TrackShipmentMockHttpResponseGenerator(Boolean isSuccess) {
+            statusCode = isSuccess ? 200 : 400;
+        }
         public HttpResponse respond(HttpRequest request) {
             // Create a fake response
             HttpResponse response = new HttpResponse();
-            response.setStatusCode(200);
-            response.setBody('Delivered');
+            response.setStatusCode(statusCode);
+            response.setBody('Shipped- On Time');
             response.setHeader('Content-Type', 'application/json');
             return response;
         }
-    }
+    }   
 }

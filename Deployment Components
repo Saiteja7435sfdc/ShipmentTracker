@@ -1,0 +1,17 @@
+Named Credential -
+    Track_Shipment
+Apex Class -
+    TrackShipmentStatusController
+LWC -
+    trackShipmentStatus
+
+
+Test Record -
+    https://cognizanttechnologysolut135-dev-ed.lightning.force.com/lightning/r/Shipment/0OB5g000000YHhDGAW/view
+
+// API Callout -
+System.debug(
+    TrackShipmentStatusController.getTrackingStatus(
+        new Map<String,Object>{'trackingNumber' => '1234'}
+    )
+);

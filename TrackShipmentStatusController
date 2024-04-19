@@ -1,0 +1,27 @@
+public class TrackShipmentStatusController {
+    @AuraEnabled
+    public static Map<String,Object> getTrackingStatus(Map<String,Object> mapInput) {
+        String trackingNumber = (String)mapInput.get('trackingNumber');
+        Map<String,Object> mapOutput = new Map<String,Object>{
+            'isCalloutFailed' => false
+        };
+        try {
+            // API Callout - STARTS
+            HttpRequest request = new HttpRequest();
+            request.setEndpoint('callout:Track_Shipment?trackingNumber=' + trackingNumber);
+            request.setMethod('GET');
+            HttpResponse response = new Http().send(request);
+            if(response.getStatusCode() == 200) {
+                mapOutput.put('status', response.getBody());
+            }
+            else {
+                mapOutput.put('isCalloutFailed', true);
+            }
+            // API Callout - ENDS
+        }
+        catch(Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+        return mapOutput;
+    }
+}

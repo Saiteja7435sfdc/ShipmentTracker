@@ -24,4 +24,18 @@ public class TrackShipmentStatusController {
         }
         return mapOutput;
     }
+
+    @AuraEnabled(cacheable=true)
+    public static String getCurrentStatus(String recordid){ 
+        Shipment ship = [SELECT Id, TrackingNumber FROM Shipment WHERE Id =:recordid];
+        String trackingNumber = ship.TrackingNumber;
+        HttpRequest request = new HttpRequest();
+        system.debug(trackingNumber);
+        request.setEndpoint(trackingNumber == null ? 'callout:Track_Shipment' :'callout:Track_Shipment?trackingNumber='+trackingNumber);
+        request.setMethod('GET');
+        HttpResponse response = new Http().send(request);
+        String body = response.getBody();
+        system.debug(body);
+        return response.getBody();
+    }
 }
